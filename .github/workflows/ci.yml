@@ -1,0 +1,50 @@
+on: [push, pull_request]
+
+name: CI
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [14.x, 16.x, 18.x]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: 🏗 Setup repository
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: 🏗 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ inputs.pnpm-version }}
+
+      - name: 🔎 Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        name: ♻️ Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-${{ matrix.node.version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.node.version }}-pnpm-store-
+
+      - name: 📦 Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm run test
