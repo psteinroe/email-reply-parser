@@ -12,10 +12,10 @@
     "test": "node ./node_modules/nodeunit/bin/nodeunit test/test.js"
   },
   "engines": {
-    "pnpm": "7",
+    "pnpm": "8",
     "node": ">= 10.0.0"
   },
-  "packageManager": "pnpm@7.18.0",
+  "packageManager": "pnpm@8.9.2",
   "author": "Crisp IM SAS",
   "license": "MIT",
   "devDependencies": {
